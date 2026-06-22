@@ -140,6 +140,11 @@ body.dark-mode .manual-service-box{background:rgba(154,52,18,.16);}
 
 /* INPUT SERVICE */
 .svc-input{padding:5px 8px;background:transparent;border-radius:6px;border:1px solid transparent;text-align:center;font-size:12px;}
+.weekdays-cell{min-width:190px;}
+.weekdays-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;align-items:center;justify-items:center;}
+.weekdays-grid .wd{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:800;color:var(--muted);}
+.weekdays-grid input[type="checkbox"]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer;}
+body.dark-mode .weekdays-grid .wd{color:#cbd5e1;}
 .svc-input:focus{background:#fff;border-color:var(--accent);}
 
 /* LOADING */
@@ -806,7 +811,7 @@ body.dark-mode .cov-zero{background:linear-gradient(90deg,#e11d48,#fb7185) !impo
       <table>
         <thead><tr>
           <th>Code</th><th>Prise</th><th>Fin</th>
-          <th>H. eff.</th><th>Amplitude</th><th>Agents/j</th><th></th>
+          <th>H. eff.</th><th>Amplitude</th><th>Agents/j</th><th>Jours</th><th></th>
         </tr></thead>
         <tbody id="serviceTable"></tbody>
       </table>
@@ -822,8 +827,8 @@ body.dark-mode .cov-zero{background:linear-gradient(90deg,#e11d48,#fb7185) !impo
       <div class="rule-item"><strong>📅 5 jours → 2 repos consécutifs</strong>Après 5j travaillés : 2j de repos obligatoires. Après ≤4j : 1j suffit.</div>
       <div class="rule-item"><strong>🛡️ Minimum 8 repos / 28j</strong>Jamais moins de 8 jours de repos par cycle.</div>
       <div class="rule-item"><strong>📆 Dimanches</strong>Au moins 1 dimanche en repos sur le cycle.</div>
-      <div class="rule-item"><strong>🔗 Couples Lyon</strong>300→301, 600→601 et 306→302 inséparables. Le samedi, 300 devient 306 ; le dimanche, 301 devient 302. Le repos court 306→302 est autorisé.</div>
-      <div class="rule-item"><strong>🔗 Paris</strong>400→401 inséparable. Les 300/301 et 600/601 sont indépendants à Paris. La 700 est ajoutée tous les samedis uniquement.</div>
+      <div class="rule-item"><strong>🔗 Couples Lyon</strong>300→301, 600→601 et 306→302 inséparables. Les jours de fonctionnement sont cochables dans les services à couvrir : 306 est prévu le samedi, 302 le dimanche.</div>
+      <div class="rule-item"><strong>🔗 Paris</strong>400→401 inséparable. Les 300/301 et 600/601 sont indépendants à Paris. La 700 est prévue le samedi uniquement via les cases cochées.</div>
       <div class="rule-item"><strong>💡 8 repos → journées légères</strong>Si un agent atteint 8 repos, on lui privilégie les créneaux ≤6h30.</div>
     </div>
   </div>
@@ -884,30 +889,33 @@ body.dark-mode .cov-zero{background:linear-gradient(90deg,#e11d48,#fb7185) !impo
 // DONNÉES
 // ═══════════════════════════════════════════════════════════
 const PARIS_BASE_SERVICES = [
-  {code:"110", start:"05:30", end:"14:00", work:8 + 30/60, minAgents:1},
-  {code:"200", start:"10:40", end:"19:05", work:8 + 25/60, minAgents:1},
-  {code:"300", start:"14:45", end:"22:29", work:7 + 44/60, minAgents:1},
-  {code:"400", start:"18:40", end:"23:06", work:4 + 26/60, minAgents:1},
-  {code:"401", start:"06:20", end:"10:10", work:3 + 50/60, minAgents:1}
+  {code:"110", start:"05:30", end:"14:00", work:8 + 30/60, minAgents:1, days:[0,1,2,3,4,5,6]},
+  {code:"200", start:"10:40", end:"19:05", work:8 + 25/60, minAgents:1, days:[0,1,2,3,4,5,6]},
+  {code:"300", start:"14:45", end:"22:29", work:7 + 44/60, minAgents:1, days:[0,1,2,3,4,5,6]},
+  {code:"400", start:"18:40", end:"23:06", work:4 + 26/60, minAgents:1, days:[0,1,2,3,4,5,6]},
+  {code:"401", start:"06:20", end:"10:10", work:3 + 50/60, minAgents:1, days:[0,1,2,3,4,5,6]},
+  {code:"700", start:"05:54", end:"12:04", work:6 + 10/60, minAgents:1, days:[5], parisSaturdayOnly:true}
 ];
 
 const LYON_BASE_SERVICES = [
-  {code:"100", start:"05:38", end:"11:25", work:5 + 47/60, minAgents:1},
-  {code:"200", start:"06:16", end:"12:19", work:6 + 3/60,  minAgents:1},
-  {code:"300", start:"09:00", end:"19:48", work:10 + 48/60, minAgents:1},
-  {code:"301", start:"12:04", end:"15:45", work:3 + 41/60,  minAgents:1},
-  {code:"600", start:"12:14", end:"21:32", work:9 + 18/60, minAgents:1},
-  {code:"601", start:"12:04", end:"15:18", work:3 + 14/60,  minAgents:1},
-  {code:"500", start:"15:42", end:"22:25", work:6 + 43/60,  minAgents:1}
+  {code:"100", start:"05:38", end:"11:25", work:5 + 47/60, minAgents:1, days:[0,1,2,3,4,5,6]},
+  {code:"200", start:"06:16", end:"12:19", work:6 + 3/60,  minAgents:1, days:[0,1,2,3,4,5,6]},
+  {code:"300", start:"09:00", end:"19:48", work:10 + 48/60, minAgents:1, days:[0,1,2,3,4,6]}, 
+  {code:"301", start:"12:04", end:"15:45", work:3 + 41/60,  minAgents:1, days:[0,1,2,3,4,5]},
+  {code:"306", start:"16:32", end:"19:48", work:3 + 16/60, minAgents:1, days:[5], lyonSpecial:true},
+  {code:"302", start:"05:54", end:"09:24", work:3 + 30/60, minAgents:1, days:[6], lyonSpecial:true},
+  {code:"600", start:"12:14", end:"21:32", work:9 + 18/60, minAgents:1, days:[0,1,2,3,4,5,6]},
+  {code:"601", start:"12:04", end:"15:18", work:3 + 14/60,  minAgents:1, days:[0,1,2,3,4,5,6]},
+  {code:"500", start:"15:42", end:"22:25", work:6 + 43/60,  minAgents:1, days:[0,1,2,3,4,5,6]}
 ];
 
 const LYON_SPECIAL_SERVICES = {
-  "306": {code:"306", start:"16:32", end:"19:48", work:3 + 16/60, minAgents:1, lyonSpecial:true},
-  "302": {code:"302", start:"05:54", end:"09:24", work:3 + 30/60, minAgents:1, lyonSpecial:true}
+  "306": {code:"306", start:"16:32", end:"19:48", work:3 + 16/60, minAgents:1, days:[5], lyonSpecial:true},
+  "302": {code:"302", start:"05:54", end:"09:24", work:3 + 30/60, minAgents:1, days:[6], lyonSpecial:true}
 };
 
 const PARIS_SPECIAL_SERVICES = {
-  "700": {code:"700", start:"05:54", end:"12:04", work:6 + 10/60, minAgents:1, parisSaturdayOnly:true}
+  "700": {code:"700", start:"05:54", end:"12:04", work:6 + 10/60, minAgents:1, days:[5], parisSaturdayOnly:true}
 };
 
 let services = cloneServices(LYON_BASE_SERVICES);
@@ -918,7 +926,7 @@ let seedModifier = 0;
 const MIN_REST = 8;
 const MANUAL_DISPO_SERVICE = {code:"DISPO", start:"10:00", end:"15:00", work:5.00, minAgents:0, manualOnly:true};
 
-function cloneServices(list){ return list.map(s=>({...s})); }
+function cloneServices(list){ return list.map(s=>({...s, days:[...(s.days || [0,1,2,3,4,5,6])]})); }
 function getCurrentSite(){ return document.getElementById("site")?.value || "lyon"; }
 function resetServicesForSite(site=getCurrentSite()){
   services = cloneServices(site === "lyon" ? LYON_BASE_SERVICES : PARIS_BASE_SERVICES);
@@ -941,6 +949,26 @@ function applySiteDefaultsAndGenerate(){
   generate();
 }
 function isSat(d){ return d.getDay()===6; }
+// Index interne des cases cochées : 0=Lundi, 1=Mardi, 2=Mercredi, 3=Jeudi, 4=Vendredi, 5=Samedi, 6=Dimanche
+const WEEKDAY_LABELS = ["L","M","M","J","V","S","D"];
+function dayIndexMonday(date){
+  return (date.getDay() + 6) % 7;
+}
+function isServiceAllowedOnDate(s, date){
+  const days = Array.isArray(s.days) ? s.days : [0,1,2,3,4,5,6];
+  return days.includes(dayIndexMonday(date));
+}
+function toggleServiceDay(i, day){
+  if(!services[i]) return;
+  if(!Array.isArray(services[i].days)) services[i].days = [0,1,2,3,4,5,6];
+  if(services[i].days.includes(day)){
+    services[i].days = services[i].days.filter(d => d !== day);
+  } else {
+    services[i].days.push(day);
+    services[i].days.sort((a,b)=>a-b);
+  }
+  refreshDemandAfterServiceChange();
+}
 function getServiceByCode(code){
   return services.find(s=>s.code===code) || LYON_SPECIAL_SERVICES[code] || PARIS_SPECIAL_SERVICES[code] || null;
 }
@@ -1051,7 +1079,14 @@ function generateDates(){
 // ═══════════════════════════════════════════════════════════
 function renderServiceTable(){
   document.getElementById("serviceTable").innerHTML = services.map((s,i)=>{
+    if(!Array.isArray(s.days)) s.days = [0,1,2,3,4,5,6];
     const amp=getAmplitude(s), bad=amp>11;
+    const weekdayChecks = WEEKDAY_LABELS.map((label,day)=>`
+      <label class="wd" title="${label}">
+        <span>${label}</span>
+        <input type="checkbox" ${s.days.includes(day) ? "checked" : ""} onchange="toggleServiceDay(${i},${day})">
+      </label>
+    `).join("");
     return `<tr class="${bad?'c-bad':''}">
       <td><input class="svc-input" style="width:55px;font-weight:800;" value="${s.code}" onchange="services[${i}].code=this.value;refreshDemandAfterServiceChange()"></td>
       <td><input class="svc-input" type="time" value="${s.start}" onchange="services[${i}].start=this.value;syncServiceWorkWithAmplitude(${i});refreshDemandAfterServiceChange()"></td>
@@ -1059,6 +1094,7 @@ function renderServiceTable(){
       <td><input class="svc-input" type="text" style="width:74px;" value="${formatWorkDuration(s.work)}" onchange="services[${i}].work=parseWorkDuration(this.value);this.value=formatWorkDuration(services[${i}].work);refreshDemandAfterServiceChange()"></td>
       <td style="${bad?'color:#991b1b;font-weight:700;':''}">${formatWorkDuration(amp)}${bad?' ⚠️':''}</td>
       <td><input class="svc-input" type="number" min="0" style="width:50px;" value="${s.minAgents}" onchange="services[${i}].minAgents=parseInt(this.value)||0;refreshDemandAfterServiceChange()"></td>
+      <td class="weekdays-cell"><div class="weekdays-grid">${weekdayChecks}</div></td>
       <td><button class="btn-secondary" style="padding:4px 8px;font-size:11px;" onclick="services.splice(${i},1);renderServiceTable();refreshDemandAfterServiceChange()">✕</button></td>
     </tr>`;
   }).join("");
@@ -1066,7 +1102,7 @@ function renderServiceTable(){
 
 function addService(){
   servicesSite = getCurrentSite();
-  services.push({code:"NEW", start:"08:00", end:"16:00", work:7.5, minAgents:1});
+  services.push({code:"NEW", start:"08:00", end:"16:00", work:7.5, minAgents:1, days:[0,1,2,3,4,5,6]});
   renderServiceTable();
 }
 
@@ -1085,15 +1121,9 @@ function buildDemand(dates, site=getCurrentSite()){
   return Array.from({length:28},(_,d)=>{
     let day=[];
     services.forEach(base=>{
-      let s = base;
-      if(site === "lyon" && base.code === "300" && isSat(dates[d])) s = LYON_SPECIAL_SERVICES["306"];
-      if(site === "lyon" && base.code === "301" && isSun(dates[d])) s = LYON_SPECIAL_SERVICES["302"];
-      for(let n=0;n<base.minAgents;n++) day.push({...s,uid:`D${d}_${s.code}_${uid++}`});
+      if(!isServiceAllowedOnDate(base, dates[d])) return;
+      for(let n=0;n<base.minAgents;n++) day.push({...base,uid:`D${d}_${base.code}_${uid++}`});
     });
-    if(site === "paris" && isSat(dates[d])){
-      const saturdaySvc = PARIS_SPECIAL_SERVICES["700"];
-      for(let n=0;n<saturdaySvc.minAgents;n++) day.push({...saturdaySvc,uid:`D${d}_${saturdaySvc.code}_${uid++}`});
-    }
     return day;
   });
 }
@@ -1606,10 +1636,20 @@ function openAgentModal(ai){
 
   // Organiser par semaines
   let html="";
-  for(let w=0;w<4;w++){
-    html+=`<div class="week-block"><h4>Semaine ${w+1}</h4><div class="week-days">`;
-    for(let d=0;d<7;d++){
-      const di=w*7+d;
+  const weekGroups={};
+  dates.forEach((date,idx)=>{
+    const jsDay=date.getDay();
+    const offset=(jsDay+6)%7;
+    const monday=new Date(date);
+    monday.setDate(date.getDate()-offset);
+    const key=monday.toISOString().slice(0,10);
+    if(!weekGroups[key]) weekGroups[key]=[];
+    weekGroups[key].push(idx);
+  });
+
+  Object.keys(weekGroups).sort().forEach((wk,wi)=>{
+    html+=`<div class="week-block"><h4>Semaine ${wi+1}</h4><div class="week-days">`;
+    weekGroups[wk].forEach(di=>{
       const s=a.days[di], date=dates[di];
       const sun=isSun(date);
       if(!s){
@@ -1624,9 +1664,9 @@ function openAgentModal(ai){
           <div class="wd-code">${s.code}</div>
           <div class="wd-h">${formatWorkDuration(s.work)}${bad?" ⚠️":""}</div></div>`;
       }
-    }
+    });
     html+=`</div></div>`;
-  }
+  });
 
   // Vérifications règles
   const totalSun=dates.filter(isSun).length;
@@ -1813,9 +1853,9 @@ function exportExcel(){
   // Puis, pour chaque agent :
   //   Ligne agent : nom + codes journées attribuées
   //   Ligne suivante : temps de travail sous chaque code journée
-  // Les jours commencent en colonne C, avec une colonne vide après le premier dimanche
+  // Les jours commencent en colonne C, avec une colonne vide après la première semaine
   // comme dans le fichier exemple.
-  const dayNames=["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+  const dayNames=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
   const rows=[];
 
   function excelSerialDate(d){
@@ -1834,7 +1874,7 @@ function exportExcel(){
     return arr;
   }
 
-  const headerDays=[null,null,...dateColumnsValues(d=>dayNames[d.getDay()]),null];
+  const headerDays=[null,null,...dateColumnsValues(d=>dayNames[dayIndexMonday(d)]),null];
   const headerDates=["ASB",null,...dateColumnsValues(d=>excelSerialDate(d)),null];
   rows.push(headerDays);
   rows.push(headerDates);
