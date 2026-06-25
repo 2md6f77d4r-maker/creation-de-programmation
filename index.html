@@ -371,6 +371,45 @@ body{
   }
 }
 
+
+/* INDICATEUR AUTO-SAVE */
+.autosave-status{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+  margin-top:12px;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(34,211,238,.08);
+  color:var(--primary);
+  font-size:12px;
+  font-weight:700;
+}
+.autosave-dot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  background:#10b981;
+  box-shadow:0 0 12px rgba(16,185,129,.55);
+}
+.autosave-status.saving .autosave-dot{
+  background:#f59e0b;
+  box-shadow:0 0 12px rgba(245,158,11,.55);
+}
+.autosave-status.error .autosave-dot{
+  background:#ef4444;
+  box-shadow:0 0 12px rgba(239,68,68,.55);
+}
+.autosave-small{
+  color:var(--muted);
+  font-weight:600;
+}
+body.dark-mode .autosave-status{
+  background:rgba(34,211,238,.10);
+  border-color:rgba(103,232,249,.22);
+}
 </style>
 
 
@@ -752,6 +791,101 @@ body.dark-mode .cov-zero{background:linear-gradient(90deg,#e11d48,#fb7185) !impo
   border-radius:12px !important;
   font-weight:900 !important;
 }
+
+
+/* POP-UP MISE À JOUR AUTO-SAVE */
+.update-popup-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:500;
+  background:rgba(2,6,23,.58);
+  backdrop-filter:blur(10px);
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+.update-popup-overlay.open{display:flex;}
+.update-popup{
+  width:min(620px,96vw);
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(34,211,238,.18), transparent 34%),
+    radial-gradient(circle at 90% 10%, rgba(124,58,237,.16), transparent 32%),
+    rgba(255,255,255,.96);
+  border:1px solid rgba(14,165,233,.28);
+  box-shadow:0 28px 90px rgba(2,6,23,.34), inset 0 1px 0 rgba(255,255,255,.7);
+  overflow:hidden;
+  color:#0f172a;
+}
+body.dark-mode .update-popup{
+  background:
+    radial-gradient(circle at 12% 0%, rgba(34,211,238,.20), transparent 34%),
+    radial-gradient(circle at 90% 10%, rgba(168,85,247,.17), transparent 32%),
+    rgba(8,14,30,.96);
+  border-color:rgba(103,232,249,.26);
+  color:#e5f6ff;
+}
+.update-popup-head{
+  padding:22px 24px 14px;
+  border-bottom:1px solid rgba(148,163,184,.22);
+}
+.update-popup-kicker{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:#0369a1;
+  background:rgba(14,165,233,.12);
+  border:1px solid rgba(14,165,233,.18);
+}
+body.dark-mode .update-popup-kicker{color:#a5f3fc;background:rgba(34,211,238,.12);}
+.update-popup h3{
+  margin:12px 0 0;
+  font-size:22px;
+  line-height:1.2;
+  font-weight:900;
+}
+.update-popup-body{padding:18px 24px 8px;}
+.update-popup-body p{font-size:14px;line-height:1.65;margin:0 0 12px;color:inherit;}
+.update-popup-list{display:grid;gap:9px;margin:14px 0 8px;}
+.update-popup-item{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  padding:10px 12px;
+  border-radius:14px;
+  background:rgba(248,250,252,.72);
+  border:1px solid rgba(148,163,184,.18);
+  font-size:13px;
+  line-height:1.45;
+}
+body.dark-mode .update-popup-item{background:rgba(15,23,42,.68);border-color:rgba(148,163,184,.18);}
+.update-popup-item span:first-child{font-size:16px;line-height:1.2;}
+.update-popup-actions{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:10px;
+  padding:16px 24px 22px;
+}
+.update-popup-actions button{font-size:13px;}
+.update-popup-note{
+  font-size:12px!important;
+  color:#64748b!important;
+  margin-top:12px!important;
+}
+body.dark-mode .update-popup-note{color:#94a3b8!important;}
+@media(max-width:620px){
+  .update-popup h3{font-size:19px;}
+  .update-popup-head,.update-popup-body,.update-popup-actions{padding-left:18px;padding-right:18px;}
+  .update-popup-actions button{width:100%;justify-content:center;}
+}
 </style>
 
 </head>
@@ -762,6 +896,35 @@ body.dark-mode .cov-zero{background:linear-gradient(90deg,#e11d48,#fb7185) !impo
   <h1>🗓️ Générateur de Programmation 28 jours</h1>
   <p>Planification réglementaire sécurisée · Gestion des repos · Couverture complète</p>
 </header>
+
+
+
+<!-- POP-UP MISE À JOUR -->
+<div class="update-popup-overlay" id="updatePopup" role="dialog" aria-modal="true" aria-labelledby="updatePopupTitle">
+  <div class="update-popup">
+    <div class="update-popup-head">
+      <div class="update-popup-kicker">🚀 Mise à jour du logiciel</div>
+      <h3 id="updatePopupTitle">Version V3.18 — Auto-save renforcée</h3>
+    </div>
+    <div class="update-popup-body">
+      <p>Le logiciel conserve maintenant automatiquement votre programmation dans le navigateur utilisé.</p>
+      <div class="update-popup-list">
+        <div class="update-popup-item"><span>💾</span><div>Votre planning, vos modifications manuelles, les services et les paramètres sont mémorisés automatiquement.</div></div>
+        <div class="update-popup-item"><span>⏱️</span><div>Une sauvegarde se fait immédiatement après les actions importantes et une vérification automatique se fait aussi toutes les 5 secondes.</div></div>
+        <div class="update-popup-item"><span>🟢</span><div>Un indicateur affiche la dernière sauvegarde connue pour vérifier rapidement que tout est bien mémorisé.</div></div>
+        <div class="update-popup-item"><span>🌐</span><div>La sauvegarde reste liée à ce navigateur et à cet appareil. Pour retrouver les informations, utilisez le même navigateur.</div></div>
+        <div class="update-popup-item"><span>🔒</span><div>Aucune donnée n’est envoyée sur GitHub : la sauvegarde reste locale sur votre appareil.</div></div>
+        <div class="update-popup-item"><span>🧹</span><div>Le bouton Réinitialiser supprime le planning affiché et efface la sauvegarde automatique.</div></div>
+        <div class="update-popup-item"><span>⚠️</span><div>Si vous videz les données du navigateur, utilisez un mode privé ou changez de navigateur, la sauvegarde peut disparaître.</div></div>
+      </div>
+      <p class="update-popup-note">Conseil : pour garder une copie externe, exportez aussi régulièrement le planning en Excel ou en PDF.</p>
+    </div>
+    <div class="update-popup-actions">
+      <button class="btn-secondary" type="button" onclick="closeUpdatePopup(false)">Fermer</button>
+      <button class="btn-primary" type="button" onclick="closeUpdatePopup(true)">J’ai compris, ne plus afficher</button>
+    </div>
+  </div>
+</div>
 
 <main>
 <!-- PARAMÈTRES -->
@@ -800,6 +963,11 @@ body.dark-mode .cov-zero{background:linear-gradient(90deg,#e11d48,#fb7185) !impo
     <button class="btn-success" onclick="exportExcel()">📥 Excel</button>
     <button class="btn-danger" onclick="exportPDF()">📄 PDF</button>
     <button class="btn-secondary" style="margin-left:auto;" onclick="resetAll()">🧹 Réinitialiser</button>
+  </div>
+  <div class="autosave-status" id="autosaveStatus" aria-live="polite">
+    <span class="autosave-dot"></span>
+    <span id="autosaveStatusText">Sauvegarde automatique prête</span>
+    <span class="autosave-small" id="autosaveStatusDetail">Les données sont conservées dans ce navigateur.</span>
   </div>
 </section>
 
@@ -985,6 +1153,152 @@ function isAllowedShortRestPair(prev, next, site=getCurrentSite()){
 // État édition manuelle
 let editState = {agentIdx:null, dayIdx:null, selected:null};
 
+// ═══════════════════════════════════════════════════════════
+// AUTO-SAVE LOCALE DU PLANNING
+// Sauvegarde dans le navigateur jusqu'au bouton Réinitialiser.
+// Fonctionne sur GitHub Pages sans serveur ni base de données.
+// ═══════════════════════════════════════════════════════════
+const AUTOSAVE_KEY = "planning_28j_autosave_v1";
+const SOFTWARE_VERSION = "V3.18";
+const AUTOSAVE_INTERVAL_MS = 5000;
+let isRestoringAutoSave = false;
+let lastAutoSaveAt = null;
+let autoSaveTimer = null;
+
+function formatAutoSaveDate(date){
+  if(!date) return "aucune sauvegarde enregistrée";
+  return date.toLocaleDateString("fr-FR") + " à " + date.toLocaleTimeString("fr-FR", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+}
+
+function setAutoSaveStatus(state, text, detail){
+  const box = document.getElementById("autosaveStatus");
+  const label = document.getElementById("autosaveStatusText");
+  const sub = document.getElementById("autosaveStatusDetail");
+  if(!box || !label || !sub) return;
+  box.classList.remove("saving", "error");
+  if(state) box.classList.add(state);
+  label.textContent = text || "Sauvegarde automatique prête";
+  sub.textContent = detail || "Les données sont conservées dans ce navigateur.";
+}
+
+function updateLastSaveIndicator(date){
+  if(date) lastAutoSaveAt = date;
+  if(lastAutoSaveAt){
+    setAutoSaveStatus("", "Dernière sauvegarde : " + formatAutoSaveDate(lastAutoSaveAt), "Sauvegarde locale dans ce navigateur uniquement.");
+  } else {
+    setAutoSaveStatus("", "Sauvegarde automatique prête", "Elle démarre dès qu’un planning est généré ou modifié.");
+  }
+}
+
+function getAutoSavePayload(){
+  return {
+    version: SOFTWARE_VERSION,
+    site: document.getElementById("site")?.value || "lyon",
+    startDate: document.getElementById("startDate")?.value || "",
+    agentCount: document.getElementById("agentCount")?.value || "10",
+    targetRest: document.getElementById("targetRest")?.value || "10",
+    targetHours: document.getElementById("targetHours")?.value || "140",
+    services: services,
+    servicesSite: servicesSite,
+    seedModifier: seedModifier,
+    lastPlanning: lastPlanning,
+    savedAt: new Date().toISOString()
+  };
+}
+
+function autoSavePlanning(reason="auto"){
+  if(isRestoringAutoSave) return;
+  if(!lastPlanning && reason !== "settings") return;
+  try{
+    setAutoSaveStatus("saving", "Sauvegarde en cours…", "Veuillez ne pas fermer la page pendant l’écriture locale.");
+    const data = getAutoSavePayload();
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
+    const savedDate = new Date(data.savedAt);
+    updateLastSaveIndicator(savedDate);
+  } catch(e){
+    console.warn("Auto-save impossible", e);
+    setAutoSaveStatus("error", "Sauvegarde impossible", "Le stockage du navigateur est peut-être plein, bloqué ou en navigation privée.");
+  }
+}
+
+function revivePlanningDates(planning){
+  if(!planning) return planning;
+  if(Array.isArray(planning.dates)){
+    planning.dates = planning.dates.map(d => new Date(d));
+  }
+  return planning;
+}
+
+function loadAutoSave(){
+  let raw = null;
+  try{ raw = localStorage.getItem(AUTOSAVE_KEY); } catch(e){ raw = null; }
+  if(!raw){ updateLastSaveIndicator(null); return false; }
+
+  try{
+    isRestoringAutoSave = true;
+    const data = JSON.parse(raw);
+
+    if(document.getElementById("site")) document.getElementById("site").value = data.site || "lyon";
+    if(document.getElementById("startDate")) document.getElementById("startDate").value = data.startDate || "2026-06-01";
+    if(document.getElementById("agentCount")) document.getElementById("agentCount").value = data.agentCount || 10;
+    if(document.getElementById("targetRest")) document.getElementById("targetRest").value = data.targetRest || 10;
+    if(document.getElementById("targetHours")) document.getElementById("targetHours").value = data.targetHours || 140;
+
+    services = Array.isArray(data.services) ? data.services : services;
+    servicesSite = data.servicesSite || data.site || getCurrentSite();
+    seedModifier = Number(data.seedModifier) || 0;
+    lastPlanning = revivePlanningDates(data.lastPlanning || null);
+
+    renderServiceTable();
+
+    if(data.savedAt) updateLastSaveIndicator(new Date(data.savedAt));
+
+    if(lastPlanning){
+      refreshDiagnosticsAndPlanning();
+      const saved = data.savedAt ? new Date(data.savedAt).toLocaleString("fr-FR") : "date inconnue";
+      const logEl = document.getElementById("log");
+      if(logEl){
+        logEl.textContent = `✅ Planning restauré depuis la sauvegarde automatique du ${saved}.\nVersion sauvegardée : ${data.version || "ancienne version"}.\n\n` + logEl.textContent;
+      }
+    }
+
+    return !!lastPlanning;
+  } catch(e){
+    console.warn("Erreur chargement auto-save", e);
+    try{ localStorage.removeItem(AUTOSAVE_KEY); } catch(err){}
+    setAutoSaveStatus("error", "Sauvegarde illisible", "L’ancienne sauvegarde a été supprimée pour éviter un blocage.");
+    return false;
+  } finally {
+    isRestoringAutoSave = false;
+  }
+}
+
+function clearAutoSave(){
+  try{ localStorage.removeItem(AUTOSAVE_KEY); } catch(e){}
+  lastAutoSaveAt = null;
+  setAutoSaveStatus("", "Sauvegarde supprimée", "Un nouveau planning sera mémorisé après le prochain calcul.");
+}
+
+function startAutoSaveLoop(){
+  if(autoSaveTimer) clearInterval(autoSaveTimer);
+  autoSaveTimer = setInterval(function(){
+    if(lastPlanning) autoSavePlanning("interval");
+  }, AUTOSAVE_INTERVAL_MS);
+}
+
+function bindAutoSaveInputs(){
+  ["site", "startDate", "agentCount", "targetRest", "targetHours"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener("change", function(){ setTimeout(()=>autoSavePlanning("settings"), 50); });
+    el.addEventListener("input", function(){ setTimeout(()=>autoSavePlanning("settings"), 250); });
+  });
+
+  window.addEventListener("beforeunload", function(){
+    if(lastPlanning) autoSavePlanning("beforeunload");
+  });
+}
+
 function buildManualService(){
   const code = (document.getElementById("manualServiceCode")?.value || "JOURNEE").trim().toUpperCase() || "JOURNEE";
   const start = document.getElementById("manualServiceStart")?.value || "08:00";
@@ -1104,13 +1418,15 @@ function addService(){
   servicesSite = getCurrentSite();
   services.push({code:"NEW", start:"08:00", end:"16:00", work:7.5, minAgents:1, days:[0,1,2,3,4,5,6]});
   renderServiceTable();
+  autoSavePlanning();
 }
 
 function refreshDemandAfterServiceChange(){
   servicesSite = getCurrentSite();
-  if(!lastPlanning) return;
+  if(!lastPlanning){ autoSavePlanning(); return; }
   lastPlanning.demand = buildDemand(lastPlanning.dates, lastPlanning.site || getCurrentSite());
   refreshDiagnosticsAndPlanning();
+  autoSavePlanning();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1370,6 +1686,7 @@ function _generate(){
   lastPlanning={dates,agents,log,tHours,tRest,demand,site,coverageProblems:[]};
   recalculateDiagnostics();
   renderPlanning();
+  autoSavePlanning();
 }
 
 
@@ -1821,6 +2138,7 @@ function applyEdit(){
   // et couverture des services.
   closeEditModal();
   refreshDiagnosticsAndPlanning();
+  autoSavePlanning();
 }
 
 function closeEditModal(){ document.getElementById("editModal").classList.remove("open"); }
@@ -2175,9 +2493,12 @@ function exportPDF(){
 // RESET
 // ═══════════════════════════════════════════════════════════
 function resetAll(){
+  clearAutoSave();
   lastPlanning=null; seedModifier=0;
+  resetServicesForSite(getCurrentSite());
+  renderServiceTable();
   ["planningHeader","planningBody","summary"].forEach(id=>document.getElementById(id).innerHTML="");
-  document.getElementById("log").textContent="En attente de calcul...";
+  document.getElementById("log").textContent="Sauvegarde supprimée. En attente de calcul...";
 }
 
 
@@ -2208,12 +2529,47 @@ function initCopyrightYear(){
   if(y) y.textContent = new Date().getFullYear();
 }
 
+
+
+// ═══════════════════════════════════════════════════════════
+// POP-UP MISE À JOUR AUTO-SAVE
+// ═══════════════════════════════════════════════════════════
+const UPDATE_POPUP_KEY = "planning_update_popup_v3_18_seen";
+
+function showUpdatePopup(){
+  const pop = document.getElementById("updatePopup");
+  if(!pop) return;
+  let alreadySeen = false;
+  try{ alreadySeen = localStorage.getItem(UPDATE_POPUP_KEY) === "1"; } catch(e){}
+  if(!alreadySeen){
+    pop.classList.add("open");
+  }
+}
+
+function closeUpdatePopup(dontShowAgain){
+  const pop = document.getElementById("updatePopup");
+  if(pop) pop.classList.remove("open");
+  if(dontShowAgain){
+    try{ localStorage.setItem(UPDATE_POPUP_KEY, "1"); } catch(e){}
+  }
+}
+
+window.addEventListener("keydown", function(e){
+  if(e.key === "Escape") closeUpdatePopup(false);
+});
+
 // ═══════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════
 initCopyrightYear();
 initTheme();
-applySiteDefaultsAndGenerate();
+renderServiceTable();
+bindAutoSaveInputs();
+startAutoSaveLoop();
+if(!loadAutoSave()){
+  applySiteDefaultsAndGenerate();
+}
+showUpdatePopup();
 </script>
 
 <script id="force-day-default-theme">
